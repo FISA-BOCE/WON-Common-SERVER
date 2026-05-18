@@ -1,7 +1,5 @@
 package com.woorifisa.won_common_server.global.response;
 
-import com.woorifisa.won_common_server.global.exception.code.SuccessStatus;
-
 public record ApiResponse<T>(
         int status,
         String message,

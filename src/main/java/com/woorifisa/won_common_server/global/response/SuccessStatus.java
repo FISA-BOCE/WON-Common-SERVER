@@ -1,4 +1,4 @@
-package com.woorifisa.won_common_server.global.exception.code;
+package com.woorifisa.won_common_server.global.response;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

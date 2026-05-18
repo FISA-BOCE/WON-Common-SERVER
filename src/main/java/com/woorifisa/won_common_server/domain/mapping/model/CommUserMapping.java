@@ -36,11 +36,11 @@ public class CommUserMapping extends BaseTimeEntity {
     private UUID investUserUuid;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "card_link_status", length = 255)
+    @Column(name = "card_link_status", nullable = false, length = 30)
     private LinkStatus cardLinkStatus = LinkStatus.NONE;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "invest_link_status", length = 255)
+    @Column(name = "invest_link_status", nullable = false, length = 30)
     private LinkStatus investLinkStatus = LinkStatus.NONE;
 
 }

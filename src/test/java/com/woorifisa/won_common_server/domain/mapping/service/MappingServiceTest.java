@@ -1,0 +1,178 @@
+package com.woorifisa.won_common_server.domain.mapping.service;
+
+import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
+import com.woorifisa.won_common_server.domain.mapping.exception.MappingErrorCode;
+import com.woorifisa.won_common_server.domain.mapping.model.CommUser;
+import com.woorifisa.won_common_server.domain.mapping.model.CommUserMapping;
+import com.woorifisa.won_common_server.domain.mapping.repository.CommUserMappingRepository;
+import com.woorifisa.won_common_server.global.exception.handler.BusinessException;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.lang.reflect.Field;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class MappingServiceTest {
+
+    @Mock
+    private CommUserMappingRepository commUserMappingRepository;
+
+    @InjectMocks
+    private MappingService mappingService;
+
+    @Test
+    @DisplayName("카드/증권 매핑 여부를 조회한다 - 카드 미연결, 증권 미연결")
+    void getMappingStatusCardNoneInvestNone() throws Exception {
+        //given
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+                .thenReturn(Optional.of(mapping));
+
+        // when
+        MappingStatusResponse response = mappingService.getMappingStatus(userUuid);
+
+        // then
+        assertThat(response.userUuid()).isEqualTo(userUuid);
+
+        assertThat(response.card().cardUserUuid()).isNull();
+        assertThat(response.card().isConnected()).isFalse();
+
+        assertThat(response.invest().investUserUuid()).isNull();
+        assertThat(response.invest().isConnected()).isFalse();
+
+    }
+
+    @Test
+    @DisplayName("카드/증권 매핑 여부를 조회한다 - 카드 연결, 증권 미연결")
+    void getMappingStatusCardLinkInvestNone() throws Exception {
+        //given
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        UUID cardUserUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
+
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+        mapping.linkCardUser(cardUserUuid);
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid)).thenReturn(Optional.of(mapping));
+
+        // when
+        MappingStatusResponse response = mappingService.getMappingStatus(userUuid);
+
+        // then
+        assertThat(response.userUuid()).isEqualTo(userUuid);
+
+        assertThat(response.card().cardUserUuid()).isEqualTo(cardUserUuid);
+        assertThat(response.card().isConnected()).isTrue();
+
+        assertThat(response.invest().investUserUuid()).isNull();
+        assertThat(response.invest().isConnected()).isFalse();
+
+    }
+
+    @Test
+    @DisplayName("카드/증권 매핑 여부를 조회한다 - 카드 미연결, 증권 연결")
+    void getMappingStatusCardNoneInvestLink() throws Exception {
+        //given
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        UUID investUserUuid = UUID.fromString("cc1e08f6-f8ea-4b3e-8e41-85f94b473111");
+
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+        mapping.linkInvestUser(investUserUuid);
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid)).thenReturn(Optional.of(mapping));
+
+        // when
+        MappingStatusResponse response = mappingService.getMappingStatus(userUuid);
+
+        // then
+        assertThat(response.userUuid()).isEqualTo(userUuid);
+
+        assertThat(response.card().cardUserUuid()).isNull();
+        assertThat(response.card().isConnected()).isFalse();
+
+        assertThat(response.invest().investUserUuid()).isEqualTo(investUserUuid);
+        assertThat(response.invest().isConnected()).isTrue();
+
+    }
+
+    @Test
+    @DisplayName("카드/증권 매핑 여부를 조회한다 - 카드 연결, 증권 연결")
+    void getMappingStatusCardLinkInvestLink() throws Exception {
+        //given
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        UUID cardUserUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
+        UUID investUserUuid = UUID.fromString("cc1e08f6-f8ea-4b3e-8e41-85f94b473111");
+
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+        mapping.linkCardUser(cardUserUuid);
+        mapping.linkInvestUser(investUserUuid);
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid)).thenReturn(Optional.of(mapping));
+
+        // when
+        MappingStatusResponse response = mappingService.getMappingStatus(userUuid);
+
+        // then
+        assertThat(response.userUuid()).isEqualTo(userUuid);
+
+        assertThat(response.card().cardUserUuid()).isEqualTo(cardUserUuid);
+        assertThat(response.card().isConnected()).isTrue();
+
+        assertThat(response.invest().investUserUuid()).isEqualTo(investUserUuid);
+        assertThat(response.invest().isConnected()).isTrue();
+
+    }
+
+    @Test
+    @DisplayName("매핑 정보가 없으면 예외가 발생한다")
+    void getMappingStatusMappingNotFound() throws Exception {
+        //given
+        UUID userUuid = UUID.fromString("0a311411-2b1d-4b5e-8b82-0fb48e511111");
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> mappingService.getMappingStatus(userUuid))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(exception -> {
+                    BusinessException businessException = (BusinessException) exception;
+                    assertThat(businessException.getErrorCode())
+                            .isEqualTo(MappingErrorCode.MAPPING_NOT_FOUND);
+                });
+
+    }
+
+    private CommUser newCommUser(UUID userUuid, String ciHash) throws Exception {
+        CommUser commUser = CommUser.create(ciHash);
+        setField(commUser, "userUuid", userUuid);
+        return commUser;
+    }
+
+    private CommUserMapping newCommUserMapping(CommUser commUser) {
+        return CommUserMapping.create(commUser);
+    }
+
+    private void setField(Object target, String fieldName, Object value) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
+    }
+
+}

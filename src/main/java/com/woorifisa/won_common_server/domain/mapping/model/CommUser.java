@@ -27,4 +27,13 @@ public class CommUser extends BaseTimeEntity {
 
     @Column(name = "ci_hash", length = 255, unique = true)
     private String ciHash;
+
+    private CommUser(String ciHash) {
+        this.ciHash = ciHash;
+    }
+
+    public static CommUser create(String ciHash) {
+        return new CommUser(ciHash);
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.woorifisa.won_common_server.domain.mapping.service;
 
+import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateCardUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
 import com.woorifisa.won_common_server.domain.mapping.exception.MappingErrorCode;
 import com.woorifisa.won_common_server.domain.mapping.model.CommUser;
@@ -140,6 +141,32 @@ class MappingServiceTest {
     }
 
     @Test
+    @DisplayName("카드 사용자 UUID를 매핑에 연결한다")
+    void linkCardUser() throws Exception {
+        // given
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        UUID cardUserUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
+
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+        UpdateCardUserMappingRequest request = new UpdateCardUserMappingRequest(cardUserUuid);
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+                .thenReturn(Optional.of(mapping));
+
+        // when
+        MappingStatusResponse response = mappingService.updateCardUserMapping(userUuid, request);
+
+        // then
+        assertThat(response.userUuid()).isEqualTo(userUuid);
+        assertThat(response.card().cardUserUuid()).isEqualTo(cardUserUuid);
+        assertThat(response.card().isConnected()).isTrue();
+
+        assertThat(response.invest().investUserUuid()).isNull();
+        assertThat(response.invest().isConnected()).isFalse();
+    }
+
+    @Test
     @DisplayName("매핑 정보가 없으면 예외가 발생한다")
     void getMappingStatusMappingNotFound() throws Exception {
         //given
@@ -157,6 +184,32 @@ class MappingServiceTest {
                             .isEqualTo(MappingErrorCode.MAPPING_NOT_FOUND);
                 });
 
+    }
+
+    @Test
+    @DisplayName("이미 카드 사용자와 연결되어 있으면 예외가 발생한다")
+    void linkCardUserAlreadyLinked() throws Exception {
+        // given
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        UUID cardUserUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
+
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+        mapping.linkCardUser(cardUserUuid);
+
+        UpdateCardUserMappingRequest request = new UpdateCardUserMappingRequest(cardUserUuid);
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+                .thenReturn(Optional.of(mapping));
+
+        // when & then
+        assertThatThrownBy(() -> mappingService.updateCardUserMapping(userUuid, request))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(exception -> {
+                    BusinessException businessException = (BusinessException) exception;
+                    assertThat(businessException.getErrorCode())
+                            .isEqualTo(MappingErrorCode.CARD_USER_ALREADY_LINKED);
+                });
     }
 
     private CommUser newCommUser(UUID userUuid, String ciHash) throws Exception {

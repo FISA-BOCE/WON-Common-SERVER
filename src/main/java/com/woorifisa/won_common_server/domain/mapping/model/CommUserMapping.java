@@ -26,11 +26,19 @@ public class CommUserMapping extends BaseTimeEntity {
     private CommUser commUser;
 
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "card_user_uuid", columnDefinition = "VARCHAR(36)")
+    @Column(
+            name = "card_user_uuid",
+            columnDefinition = "VARCHAR(36)",
+            unique = true
+    )
     private UUID cardUserUuid;
 
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "invest_user_uuid", columnDefinition = "VARCHAR(36)")
+    @Column(
+            name = "invest_user_uuid",
+            columnDefinition = "VARCHAR(36)",
+            unique = true
+    )
     private UUID investUserUuid;
 
     @Enumerated(EnumType.STRING)

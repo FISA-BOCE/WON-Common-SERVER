@@ -95,4 +95,72 @@ class CommUserMappingRepositoryTest {
         // then
         assertThat(result).isEmpty();
     }
+
+    @Test
+    @DisplayName("cardUserUuid가 이미 존재하면 true를 반환한다")
+    void existsByCardUserUuid() {
+        // given
+        UUID cardUserUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
+
+        CommUser commUser = CommUser.create("test-ci-hash-card-exists");
+        CommUser savedUser = commUserRepository.save(commUser);
+
+        CommUserMapping mapping = CommUserMapping.create(savedUser);
+        mapping.linkCardUser(cardUserUuid);
+
+        commUserMappingRepository.save(mapping);
+
+        // when
+        boolean result = commUserMappingRepository.existsByCardUserUuid(cardUserUuid);
+
+        // then
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("cardUserUuid가 존재하지 않으면 false를 반환한다")
+    void existsByCardUserUuidNotFound() {
+        // given
+        UUID cardUserUuid = UUID.fromString("99999999-9999-9999-9999-999999999999");
+
+        // when
+        boolean result = commUserMappingRepository.existsByCardUserUuid(cardUserUuid);
+
+        // then
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("investUserUuid가 이미 존재하면 true를 반환한다")
+    void existsByInvestUserUuid() {
+        // given
+        UUID investUserUuid = UUID.fromString("cc1e08f6-f8ea-4b3e-8e41-85f94b473111");
+
+        CommUser commUser = CommUser.create("test-ci-hash-invest-exists");
+        CommUser savedUser = commUserRepository.save(commUser);
+
+        CommUserMapping mapping = CommUserMapping.create(savedUser);
+        mapping.linkInvestUser(investUserUuid);
+
+        commUserMappingRepository.save(mapping);
+
+        // when
+        boolean result = commUserMappingRepository.existsByInvestUserUuid(investUserUuid);
+
+        // then
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("investUserUuid가 존재하지 않으면 false를 반환한다")
+    void existsByInvestUserUuidNotFound() {
+        // given
+        UUID investUserUuid = UUID.fromString("88888888-8888-8888-8888-888888888888");
+
+        // when
+        boolean result = commUserMappingRepository.existsByInvestUserUuid(investUserUuid);
+
+        // then
+        assertThat(result).isFalse();
+    }
 }

@@ -15,11 +15,11 @@ public record MappingStatusResponse(
                 mapping.getCommUser().getUserUuid(),
                 new CardMappingStatus(
                         mapping.getCardUserUuid(),
-                        mapping.getCardLinkStatus().isConnected()
+                        mapping.isCardConnected()
                 ),
                 new InvestMappingStatus(
                         mapping.getInvestUserUuid(),
-                        mapping.getInvestLinkStatus().isConnected()
+                        mapping.isInvestConnected()
                 )
         );
     }

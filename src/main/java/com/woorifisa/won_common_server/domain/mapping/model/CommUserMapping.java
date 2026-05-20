@@ -43,8 +43,6 @@ public class CommUserMapping extends BaseTimeEntity {
 
     private CommUserMapping(CommUser commUser) {
         this.commUser = commUser;
-        this.cardLinkStatus = LinkStatus.NONE;
-        this.investLinkStatus = LinkStatus.NONE;
     }
 
     public static CommUserMapping create(CommUser commUser) {

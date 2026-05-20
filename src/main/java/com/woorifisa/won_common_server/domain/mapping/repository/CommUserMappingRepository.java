@@ -11,7 +11,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CommUserMappingRepository extends JpaRepository<CommUserMapping, Long> {
+
     Optional<CommUserMapping> findByCommUserUserUuid(UUID userUuid);
+
+    boolean existsByCardUserUuid(UUID cardUserUuid);
+
+    boolean existsByInvestUserUuid(UUID investUserUuid);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""

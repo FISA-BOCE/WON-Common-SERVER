@@ -33,6 +33,10 @@ public class MappingService {
             throw new BusinessException(MappingErrorCode.CARD_USER_ALREADY_LINKED);
         }
 
+        if (commUserMappingRepository.existsByCardUserUuid(request.cardUserUuid())) {
+            throw new BusinessException(MappingErrorCode.CARD_USER_ALREADY_MAPPED);
+        }
+
         commUserMapping.linkCardUser(request.cardUserUuid());
 
         return MappingStatusResponse.from(commUserMapping);
@@ -45,6 +49,10 @@ public class MappingService {
 
         if (commUserMapping.isInvestConnected()) {
             throw new BusinessException(MappingErrorCode.INVEST_USER_ALREADY_LINKED);
+        }
+
+        if (commUserMappingRepository.existsByInvestUserUuid(request.investUserUuid())) {
+            throw new BusinessException(MappingErrorCode.INVEST_USER_ALREADY_MAPPED);
         }
 
         commUserMapping.linkInvestUser(request.investUserUuid());

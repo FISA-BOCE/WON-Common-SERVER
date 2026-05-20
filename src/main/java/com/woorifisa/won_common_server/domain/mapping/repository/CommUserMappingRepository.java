@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CommUserMappingRepository extends JpaRepository<CommUserMapping, UUID> {
+public interface CommUserMappingRepository extends JpaRepository<CommUserMapping, Long> {
     Optional<CommUserMapping> findByCommUserUserUuid(UUID userUuid);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

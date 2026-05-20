@@ -1,6 +1,7 @@
 package com.woorifisa.won_common_server.domain.mapping.api;
 
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateCardUserMappingRequest;
+import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateInvestUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
 import com.woorifisa.won_common_server.domain.mapping.service.MappingService;
 import com.woorifisa.won_common_server.global.response.ApiResponse;
@@ -36,6 +37,16 @@ public class InternalMappingApi {
         return ResponseEntity
                 .status(SuccessStatus.CARD_USER_LINKED.getHttpStatus())
                 .body(ApiResponse.of(SuccessStatus.CARD_USER_LINKED, mappingStatusResponse));
+    }
+
+    @PatchMapping("/{userUuid}/invest")
+    public ResponseEntity<ApiResponse<MappingStatusResponse>> updateInvestUserMapping(@PathVariable UUID userUuid,
+                                                                                    @Valid @RequestBody UpdateInvestUserMappingRequest updateInvestUserMappingRequest) {
+        MappingStatusResponse mappingStatusResponse = mappingService.updateInvestUserMapping(userUuid, updateInvestUserMappingRequest);
+
+        return ResponseEntity
+                .status(SuccessStatus.INVEST_USER_LINKED.getHttpStatus())
+                .body(ApiResponse.of(SuccessStatus.INVEST_USER_LINKED, mappingStatusResponse));
     }
 
 }

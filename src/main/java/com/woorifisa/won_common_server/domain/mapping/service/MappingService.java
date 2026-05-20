@@ -1,6 +1,7 @@
 package com.woorifisa.won_common_server.domain.mapping.service;
 
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateCardUserMappingRequest;
+import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateInvestUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
 import com.woorifisa.won_common_server.domain.mapping.exception.MappingErrorCode;
 import com.woorifisa.won_common_server.domain.mapping.model.CommUserMapping;
@@ -38,5 +39,19 @@ public class MappingService {
 
         return MappingStatusResponse.from(commUserMapping);
 
+    }
+
+    @Transactional
+    public MappingStatusResponse updateInvestUserMapping(UUID userUuid, UpdateInvestUserMappingRequest request) {
+        CommUserMapping commUserMapping = commUserMappingRepository.findByCommUserUserUuid(userUuid)
+                .orElseThrow(() -> new BusinessException(MappingErrorCode.MAPPING_NOT_FOUND));
+
+        if (commUserMapping.isInvestConnected()) {
+            throw new BusinessException(MappingErrorCode.INVEST_USER_ALREADY_LINKED);
+        }
+
+        commUserMapping.linkInvestUser(request.investUserUuid());
+
+        return MappingStatusResponse.from(commUserMapping);
     }
 }

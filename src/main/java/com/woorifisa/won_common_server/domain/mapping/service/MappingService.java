@@ -8,6 +8,7 @@ import com.woorifisa.won_common_server.domain.mapping.model.CommUserMapping;
 import com.woorifisa.won_common_server.domain.mapping.repository.CommUserMappingRepository;
 import com.woorifisa.won_common_server.global.exception.handler.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,12 @@ public class MappingService {
             throw new BusinessException(MappingErrorCode.CARD_USER_ALREADY_MAPPED);
         }
 
-        commUserMapping.linkCardUser(request.cardUserUuid());
+        try {
+            commUserMapping.linkCardUser(request.cardUserUuid());
+            commUserMappingRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(MappingErrorCode.CARD_USER_ALREADY_MAPPED);
+        }
 
         return MappingStatusResponse.from(commUserMapping);
 
@@ -55,7 +61,12 @@ public class MappingService {
             throw new BusinessException(MappingErrorCode.INVEST_USER_ALREADY_MAPPED);
         }
 
-        commUserMapping.linkInvestUser(request.investUserUuid());
+        try {
+            commUserMapping.linkInvestUser(request.investUserUuid());
+            commUserMappingRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(MappingErrorCode.INVEST_USER_ALREADY_MAPPED);
+        }
 
         return MappingStatusResponse.from(commUserMapping);
     }

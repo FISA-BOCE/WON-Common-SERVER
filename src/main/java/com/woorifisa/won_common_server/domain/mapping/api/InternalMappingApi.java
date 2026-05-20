@@ -5,6 +5,7 @@ import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatus
 import com.woorifisa.won_common_server.domain.mapping.service.MappingService;
 import com.woorifisa.won_common_server.global.response.ApiResponse;
 import com.woorifisa.won_common_server.global.response.SuccessStatus;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class InternalMappingApi {
     private final MappingService mappingService;
 
     @GetMapping("/{userUuid}")
-    public ResponseEntity<ApiResponse<MappingStatusResponse>> getMappingStatus(@PathVariable UUID userUuid){
+    public ResponseEntity<ApiResponse<MappingStatusResponse>> getMappingStatus(@PathVariable UUID userUuid) {
         MappingStatusResponse mappingStatusResponse = mappingService.getMappingStatus(userUuid);
 
         return ResponseEntity
@@ -28,7 +29,8 @@ public class InternalMappingApi {
     }
 
     @PatchMapping("/{userUuid}/card")
-    public ResponseEntity<ApiResponse<MappingStatusResponse>> updateCardUserMapping(@PathVariable UUID userUuid, UpdateCardUserMappingRequest updateCardUserMappingRequest){
+    public ResponseEntity<ApiResponse<MappingStatusResponse>> updateCardUserMapping(@PathVariable UUID userUuid,
+                                                                                    @Valid @RequestBody UpdateCardUserMappingRequest updateCardUserMappingRequest) {
         MappingStatusResponse mappingStatusResponse = mappingService.updateCardUserMapping(userUuid, updateCardUserMappingRequest);
 
         return ResponseEntity

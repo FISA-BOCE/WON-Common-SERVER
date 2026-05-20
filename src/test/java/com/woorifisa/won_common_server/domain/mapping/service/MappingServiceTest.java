@@ -1,6 +1,7 @@
 package com.woorifisa.won_common_server.domain.mapping.service;
 
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateCardUserMappingRequest;
+import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateInvestUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
 import com.woorifisa.won_common_server.domain.mapping.exception.MappingErrorCode;
 import com.woorifisa.won_common_server.domain.mapping.model.CommUser;
@@ -209,6 +210,58 @@ class MappingServiceTest {
                     BusinessException businessException = (BusinessException) exception;
                     assertThat(businessException.getErrorCode())
                             .isEqualTo(MappingErrorCode.CARD_USER_ALREADY_LINKED);
+                });
+    }
+
+    @Test
+    @DisplayName("증권 사용자 UUID를 매핑에 연결한다")
+    void updateInvestUser() throws Exception {
+        // given
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        UUID investUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
+
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+        UpdateInvestUserMappingRequest request = new UpdateInvestUserMappingRequest(investUuid);
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+                .thenReturn(Optional.of(mapping));
+
+        // when
+        MappingStatusResponse response = mappingService.updateInvestUserMapping(userUuid, request);
+
+        // then
+        assertThat(response.userUuid()).isEqualTo(userUuid);
+        assertThat(response.card().cardUserUuid()).isNull();
+        assertThat(response.card().isConnected()).isFalse();
+
+        assertThat(response.invest().investUserUuid()).isEqualTo(investUuid);
+        assertThat(response.invest().isConnected()).isTrue();
+    }
+
+    @Test
+    @DisplayName("이미 증권 사용자와 연결되어 있으면 예외가 발생한다")
+    void updateInvestUserAlreadyLinked() throws Exception {
+        // given
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        UUID investUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
+
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+        mapping.linkInvestUser(investUuid);
+
+        UpdateInvestUserMappingRequest request = new UpdateInvestUserMappingRequest(investUuid);
+
+        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+                .thenReturn(Optional.of(mapping));
+
+        // when & then
+        assertThatThrownBy(() -> mappingService.updateInvestUserMapping(userUuid, request))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(exception -> {
+                    BusinessException businessException = (BusinessException) exception;
+                    assertThat(businessException.getErrorCode())
+                            .isEqualTo(MappingErrorCode.INVEST_USER_ALREADY_LINKED);
                 });
     }
 

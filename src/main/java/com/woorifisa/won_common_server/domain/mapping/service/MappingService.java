@@ -20,16 +20,14 @@ public class MappingService {
     private final CommUserMappingRepository commUserMappingRepository;
 
     public MappingStatusResponse getMappingStatus(UUID userUuid) {
-        CommUserMapping commUserMapping = commUserMappingRepository.findByCommUserUserUuid(userUuid)
-                .orElseThrow(() -> new BusinessException(MappingErrorCode.MAPPING_NOT_FOUND));
+        CommUserMapping commUserMapping = getMappingByUserUuid(userUuid);
 
         return MappingStatusResponse.from(commUserMapping);
     }
 
     @Transactional
     public MappingStatusResponse updateCardUserMapping(UUID userUuid, UpdateCardUserMappingRequest request) {
-        CommUserMapping commUserMapping = commUserMappingRepository.findByCommUserUserUuid(userUuid)
-                .orElseThrow(() -> new BusinessException(MappingErrorCode.MAPPING_NOT_FOUND));
+        CommUserMapping commUserMapping = getMappingByUserUuidForUpdate(userUuid);
 
         if (commUserMapping.isCardConnected()) {
             throw new BusinessException(MappingErrorCode.CARD_USER_ALREADY_LINKED);
@@ -43,8 +41,7 @@ public class MappingService {
 
     @Transactional
     public MappingStatusResponse updateInvestUserMapping(UUID userUuid, UpdateInvestUserMappingRequest request) {
-        CommUserMapping commUserMapping = commUserMappingRepository.findByCommUserUserUuid(userUuid)
-                .orElseThrow(() -> new BusinessException(MappingErrorCode.MAPPING_NOT_FOUND));
+        CommUserMapping commUserMapping = getMappingByUserUuidForUpdate(userUuid);
 
         if (commUserMapping.isInvestConnected()) {
             throw new BusinessException(MappingErrorCode.INVEST_USER_ALREADY_LINKED);
@@ -53,5 +50,15 @@ public class MappingService {
         commUserMapping.linkInvestUser(request.investUserUuid());
 
         return MappingStatusResponse.from(commUserMapping);
+    }
+
+    private CommUserMapping getMappingByUserUuid(UUID userUuid) {
+        return commUserMappingRepository.findByCommUserUserUuid(userUuid)
+                .orElseThrow(() -> new BusinessException(MappingErrorCode.MAPPING_NOT_FOUND));
+    }
+
+    private CommUserMapping getMappingByUserUuidForUpdate(UUID userUuid) {
+        return commUserMappingRepository.findByCommUserUserUuidForUpdate(userUuid)
+                .orElseThrow(() -> new BusinessException(MappingErrorCode.MAPPING_NOT_FOUND));
     }
 }

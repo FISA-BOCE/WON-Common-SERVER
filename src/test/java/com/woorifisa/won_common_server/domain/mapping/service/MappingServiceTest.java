@@ -152,7 +152,7 @@ class MappingServiceTest {
         CommUserMapping mapping = newCommUserMapping(commUser);
         UpdateCardUserMappingRequest request = new UpdateCardUserMappingRequest(cardUserUuid);
 
-        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+        when(commUserMappingRepository.findByCommUserUserUuidForUpdate(userUuid))
                 .thenReturn(Optional.of(mapping));
 
         // when
@@ -200,7 +200,7 @@ class MappingServiceTest {
 
         UpdateCardUserMappingRequest request = new UpdateCardUserMappingRequest(cardUserUuid);
 
-        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+        when(commUserMappingRepository.findByCommUserUserUuidForUpdate(userUuid))
                 .thenReturn(Optional.of(mapping));
 
         // when & then
@@ -224,7 +224,7 @@ class MappingServiceTest {
         CommUserMapping mapping = newCommUserMapping(commUser);
         UpdateInvestUserMappingRequest request = new UpdateInvestUserMappingRequest(investUuid);
 
-        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+        when(commUserMappingRepository.findByCommUserUserUuidForUpdate(userUuid))
                 .thenReturn(Optional.of(mapping));
 
         // when
@@ -252,7 +252,7 @@ class MappingServiceTest {
 
         UpdateInvestUserMappingRequest request = new UpdateInvestUserMappingRequest(investUuid);
 
-        when(commUserMappingRepository.findByCommUserUserUuid(userUuid))
+        when(commUserMappingRepository.findByCommUserUserUuidForUpdate(userUuid))
                 .thenReturn(Optional.of(mapping));
 
         // when & then

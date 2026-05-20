@@ -142,7 +142,7 @@ class MappingServiceTest {
 
     @Test
     @DisplayName("카드 사용자 UUID를 매핑에 연결한다")
-    void linkCardUser() throws Exception {
+    void updateCardUserMapping() throws Exception {
         // given
         UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
         UUID cardUserUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");

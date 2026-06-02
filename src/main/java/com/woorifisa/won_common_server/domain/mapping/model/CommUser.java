@@ -9,8 +9,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
+import org.springframework.data.domain.Persistable;
 
 import java.util.UUID;
 
@@ -18,9 +18,8 @@ import java.util.UUID;
 @Getter
 @Table(name = "comm_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CommUser extends BaseTimeEntity {
+public class CommUser extends BaseTimeEntity implements Persistable<UUID> {
     @Id
-    @UuidGenerator
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "user_uuid", columnDefinition = "VARCHAR(36)")
     private UUID userUuid;
@@ -32,8 +31,20 @@ public class CommUser extends BaseTimeEntity {
         this.ciHash = ciHash;
     }
 
-    public static CommUser create(String ciHash) {
-        return new CommUser(ciHash);
+    public static CommUser create(UUID userUuid, String ciHash) {
+        CommUser commUser = new CommUser(ciHash);
+        commUser.userUuid = userUuid;
+        return commUser;
+    }
+
+    @Override
+    public UUID getId() {
+        return userUuid;
+    }
+
+    @Override
+    public boolean isNew() {
+        return createdAt == null;
     }
 
 }

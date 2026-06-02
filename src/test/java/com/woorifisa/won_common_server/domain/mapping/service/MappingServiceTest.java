@@ -3,17 +3,20 @@ package com.woorifisa.won_common_server.domain.mapping.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
+import com.woorifisa.won_common_server.domain.mapping.dto.request.InitializeUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateCardUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateInvestUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
 import com.woorifisa.won_common_server.domain.mapping.exception.MappingErrorCode;
 import com.woorifisa.won_common_server.domain.mapping.model.CommUser;
 import com.woorifisa.won_common_server.domain.mapping.model.CommUserMapping;
+import com.woorifisa.won_common_server.domain.mapping.repository.CommUserRepository;
 import com.woorifisa.won_common_server.domain.mapping.repository.CommUserMappingRepository;
 import com.woorifisa.won_common_server.global.exception.handler.BusinessException;
 
-import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,10 +31,53 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class MappingServiceTest {
 
     @Mock
+    private CommUserRepository commUserRepository;
+
+    @Mock
     private CommUserMappingRepository commUserMappingRepository;
 
     @InjectMocks
     private MappingService mappingService;
+
+    @Test
+    @DisplayName("공통 사용자 매핑이 없으면 초기 row를 생성한다")
+    void initializeUserMappingCreatesInitialMapping() throws Exception {
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        InitializeUserMappingRequest request = new InitializeUserMappingRequest(userUuid);
+
+        CommUser commUser = CommUser.create(userUuid, null);
+        CommUserMapping mapping = newCommUserMapping(commUser);
+
+        given(commUserMappingRepository.findByCommUserUserUuid(userUuid)).willReturn(Optional.empty());
+        given(commUserRepository.findById(userUuid)).willReturn(Optional.empty());
+        given(commUserRepository.save(any(CommUser.class))).willReturn(commUser);
+        given(commUserMappingRepository.save(any(CommUserMapping.class))).willReturn(mapping);
+
+        MappingStatusResponse response = mappingService.initializeUserMapping(request);
+
+        assertThat(response.userUuid()).isEqualTo(userUuid);
+        assertThat(response.card().isConnected()).isFalse();
+        assertThat(response.invest().isConnected()).isFalse();
+        verify(commUserRepository).save(any(CommUser.class));
+        verify(commUserMappingRepository).save(any(CommUserMapping.class));
+    }
+
+    @Test
+    @DisplayName("공통 사용자 매핑이 이미 있으면 기존 상태를 반환한다")
+    void initializeUserMappingReturnsExistingMapping() throws Exception {
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        InitializeUserMappingRequest request = new InitializeUserMappingRequest(userUuid);
+        CommUser commUser = newCommUser(userUuid, "test-ci-hash-001");
+        CommUserMapping mapping = newCommUserMapping(commUser);
+
+        given(commUserMappingRepository.findByCommUserUserUuid(userUuid)).willReturn(Optional.of(mapping));
+
+        MappingStatusResponse response = mappingService.initializeUserMapping(request);
+
+        assertThat(response.userUuid()).isEqualTo(userUuid);
+        assertThat(response.card().isConnected()).isFalse();
+        assertThat(response.invest().isConnected()).isFalse();
+    }
 
     @Test
     @DisplayName("카드/증권 매핑 여부를 조회한다 - 카드 미연결, 증권 미연결")
@@ -329,18 +375,11 @@ class MappingServiceTest {
     }
 
     private CommUser newCommUser(UUID userUuid, String ciHash) throws Exception {
-        CommUser commUser = CommUser.create(ciHash);
-        setField(commUser, "userUuid", userUuid);
-        return commUser;
+        return CommUser.create(userUuid, ciHash);
     }
 
     private CommUserMapping newCommUserMapping(CommUser commUser) {
         return CommUserMapping.create(commUser);
     }
 
-    private void setField(Object target, String fieldName, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
-    }
 }

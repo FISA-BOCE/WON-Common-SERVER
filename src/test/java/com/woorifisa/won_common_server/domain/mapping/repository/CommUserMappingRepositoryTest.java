@@ -27,10 +27,23 @@ class CommUserMappingRepositoryTest {
     private CommUserMappingRepository commUserMappingRepository;
 
     @Test
+    @DisplayName("외부에서 지정한 userUuid로 신규 공통 사용자를 저장한다")
+    void saveCommUserWithAssignedUserUuid() {
+        // given
+        UUID userUuid = UUID.fromString("8d619c85-b4f6-49f5-b622-88daa3b2b512");
+
+        // when
+        commUserRepository.saveAndFlush(CommUser.create(userUuid, null));
+
+        // then
+        assertThat(commUserRepository.findById(userUuid)).isPresent();
+    }
+
+    @Test
     @DisplayName("userUuid 기준으로 고객 매핑 정보를 조회한다")
     void findByCommUserUserUuid() {
         // given
-        CommUser commUser = CommUser.create("test-ci-hash-001");
+        CommUser commUser = CommUser.create(UUID.randomUUID(), "test-ci-hash-001");
         CommUser savedUser = commUserRepository.save(commUser);
 
         CommUserMapping mapping = CommUserMapping.create(savedUser);
@@ -59,7 +72,7 @@ class CommUserMappingRepositoryTest {
         UUID cardUserUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
         UUID investUserUuid = UUID.fromString("cc1e08f6-f8ea-4b3e-8e41-85f94b473111");
 
-        CommUser commUser = CommUser.create("test-ci-hash-002");
+        CommUser commUser = CommUser.create(UUID.randomUUID(), "test-ci-hash-002");
         CommUser savedUser = commUserRepository.save(commUser);
 
         CommUserMapping mapping = CommUserMapping.create(savedUser);
@@ -102,7 +115,7 @@ class CommUserMappingRepositoryTest {
         // given
         UUID cardUserUuid = UUID.fromString("4f8b3f2a-f7e6-43f8-b4df-a6729a671111");
 
-        CommUser commUser = CommUser.create("test-ci-hash-card-exists");
+        CommUser commUser = CommUser.create(UUID.randomUUID(), "test-ci-hash-card-exists");
         CommUser savedUser = commUserRepository.save(commUser);
 
         CommUserMapping mapping = CommUserMapping.create(savedUser);
@@ -136,7 +149,7 @@ class CommUserMappingRepositoryTest {
         // given
         UUID investUserUuid = UUID.fromString("cc1e08f6-f8ea-4b3e-8e41-85f94b473111");
 
-        CommUser commUser = CommUser.create("test-ci-hash-invest-exists");
+        CommUser commUser = CommUser.create(UUID.randomUUID(), "test-ci-hash-invest-exists");
         CommUser savedUser = commUserRepository.save(commUser);
 
         CommUserMapping mapping = CommUserMapping.create(savedUser);

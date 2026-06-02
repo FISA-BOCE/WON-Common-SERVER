@@ -3,11 +3,13 @@ package com.woorifisa.won_common_server.domain.mapping.api;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.woorifisa.won_common_server.domain.mapping.dto.request.InitializeUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateCardUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateInvestUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
@@ -36,6 +38,36 @@ class InternalMappingApiTest {
     private MappingService mappingService;
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("공통 사용자 매핑 초기화 API 성공")
+    void initializeUserMappingSuccess() throws Exception {
+        UUID userUuid = UUID.fromString("0a31e4b1-2b1d-4b5e-8b82-0fb48e502111");
+        InitializeUserMappingRequest request = new InitializeUserMappingRequest(userUuid);
+
+        MappingStatusResponse response = new MappingStatusResponse(
+                userUuid,
+                new MappingStatusResponse.CardMappingStatus(null, false),
+                new MappingStatusResponse.InvestMappingStatus(null, false)
+        );
+
+        given(mappingService.initializeUserMapping(any(InitializeUserMappingRequest.class)))
+                .willReturn(response);
+
+        mockMvc.perform(
+                        post("/internal/mappings/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("X-Service-ID", "WON-CARD-CHANNEL")
+                                .header("X-Transaction-ID", "TX-20260512-MAP00")
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value(201))
+                .andExpect(jsonPath("$.message").value("공통 사용자 매핑 초기화가 완료되었습니다."))
+                .andExpect(jsonPath("$.data.userUuid").value(userUuid.toString()))
+                .andExpect(jsonPath("$.data.card.isConnected").value(false))
+                .andExpect(jsonPath("$.data.invest.isConnected").value(false));
+    }
 
     @Test
     @DisplayName("카드/증권 연결 상태 조회 API 성공")

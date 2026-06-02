@@ -1,10 +1,13 @@
 package com.woorifisa.won_common_server.domain.mapping.service;
 
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateCardUserMappingRequest;
+import com.woorifisa.won_common_server.domain.mapping.dto.request.InitializeUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateInvestUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
 import com.woorifisa.won_common_server.domain.mapping.exception.MappingErrorCode;
+import com.woorifisa.won_common_server.domain.mapping.model.CommUser;
 import com.woorifisa.won_common_server.domain.mapping.model.CommUserMapping;
+import com.woorifisa.won_common_server.domain.mapping.repository.CommUserRepository;
 import com.woorifisa.won_common_server.domain.mapping.repository.CommUserMappingRepository;
 import com.woorifisa.won_common_server.global.exception.handler.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +21,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MappingService {
+    private final CommUserRepository commUserRepository;
     private final CommUserMappingRepository commUserMappingRepository;
+
+    @Transactional
+    public MappingStatusResponse initializeUserMapping(InitializeUserMappingRequest request) {
+        return commUserMappingRepository.findByCommUserUserUuid(request.userUuid())
+                .map(MappingStatusResponse::from)
+                .orElseGet(() -> createInitialMapping(request.userUuid()));
+    }
 
     public MappingStatusResponse getMappingStatus(UUID userUuid) {
         CommUserMapping commUserMapping = getMappingByUserUuid(userUuid);
@@ -79,5 +90,13 @@ public class MappingService {
     private CommUserMapping getMappingByUserUuidForUpdate(UUID userUuid) {
         return commUserMappingRepository.findByCommUserUserUuidForUpdate(userUuid)
                 .orElseThrow(() -> new BusinessException(MappingErrorCode.MAPPING_NOT_FOUND));
+    }
+
+    private MappingStatusResponse createInitialMapping(UUID userUuid) {
+        CommUser commUser = commUserRepository.findById(userUuid)
+                .orElseGet(() -> commUserRepository.save(CommUser.create(userUuid, null)));
+
+        CommUserMapping commUserMapping = commUserMappingRepository.save(CommUserMapping.create(commUser));
+        return MappingStatusResponse.from(commUserMapping);
     }
 }

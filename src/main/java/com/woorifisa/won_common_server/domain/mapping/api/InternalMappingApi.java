@@ -1,5 +1,6 @@
 package com.woorifisa.won_common_server.domain.mapping.api;
 
+import com.woorifisa.won_common_server.domain.mapping.dto.request.InitializeUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateCardUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.request.UpdateInvestUserMappingRequest;
 import com.woorifisa.won_common_server.domain.mapping.dto.response.MappingStatusResponse;
@@ -23,6 +24,20 @@ public class InternalMappingApi {
 
     private final MappingService mappingService;
 
+    @Operation(
+            summary = "공통 사용자 매핑 초기화",
+            description = "앱 회원가입 시 공통 사용자와 카드/증권 연결용 초기 매핑 정보를 생성합니다. 이미 존재하면 현재 상태를 반환합니다."
+    )
+    @PostMapping
+    public ResponseEntity<ApiResponse<MappingStatusResponse>> initializeUserMapping(
+            @Valid @RequestBody InitializeUserMappingRequest request
+    ) {
+        MappingStatusResponse mappingStatusResponse = mappingService.initializeUserMapping(request);
+
+        return ResponseEntity
+                .status(SuccessStatus.USER_MAPPING_INITIALIZED.getHttpStatus())
+                .body(ApiResponse.of(SuccessStatus.USER_MAPPING_INITIALIZED, mappingStatusResponse));
+    }
 
     @Operation(
             summary = "카드/증권 연결 상태 조회",

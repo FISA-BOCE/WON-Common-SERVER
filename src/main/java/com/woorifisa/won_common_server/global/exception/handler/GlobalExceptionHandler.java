@@ -1,8 +1,10 @@
 package com.woorifisa.won_common_server.global.exception.handler;
 
+import com.woorifisa.won_common_server.domain.chat.exception.code.ChatErrorCode;
 import com.woorifisa.won_common_server.global.exception.code.CommonErrorCode;
 import com.woorifisa.won_common_server.global.exception.code.ErrorCode;
 import com.woorifisa.won_common_server.global.response.ErrorResponse;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -56,6 +58,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(CommonErrorCode.INVALID_REQUEST.getHttpStatus())
                 .body(ErrorResponse.of(CommonErrorCode.INVALID_REQUEST));
+    }
+
+    @ExceptionHandler(WebClientResponseException.class)
+    public ResponseEntity<ErrorResponse> handleWebClientResponseException(WebClientResponseException e) {
+        log.error("webclient error: status={}, url={}", e.getStatusCode(), e.getRequest() != null ? e.getRequest().getURI() : "unknown");
+        return ResponseEntity
+                .status(ChatErrorCode.AI_WAS_ERROR.getHttpStatus())
+                .body(ErrorResponse.of(ChatErrorCode.AI_WAS_ERROR));
     }
 
     @ExceptionHandler(Exception.class)

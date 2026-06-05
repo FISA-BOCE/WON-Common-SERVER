@@ -21,3 +21,11 @@ management:
     web:
       exposure:
         include: health,info
+
+external:
+  azure-ai-was:
+    url: ${AZURE_AI_WAS_URL:http://localhost:8090}
+  card-channel-was:
+    url: ${CARD_CHANNEL_WAS_URL:http://localhost:8081}
+  invest-channel-was:
+    url: ${INVEST_CHANNEL_WAS_URL:http://localhost:8083}

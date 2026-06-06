@@ -50,6 +50,7 @@ public class WebClientConfig {
                 .build();
     }
 
+    // connect timeout 5s, read timeout 30s
     private HttpClient defaultHttpClient() {
         return HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)

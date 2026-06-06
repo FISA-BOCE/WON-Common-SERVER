@@ -29,3 +29,8 @@ external:
     url: ${CARD_CHANNEL_WAS_URL:http://localhost:8081}
   invest-channel-was:
     url: ${INVEST_CHANNEL_WAS_URL:http://localhost:8083}
+
+internal:
+  channel:
+    allowed-service-id: card-channel-was
+    api-key: local-test-internal-api-key

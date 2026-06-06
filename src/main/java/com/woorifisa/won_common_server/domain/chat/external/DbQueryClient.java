@@ -11,6 +11,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DbQueryClient {
 
+    private static final String SERVICE_ID = "common-was";
+    private static final String DATA_SOURCE_SECURITIES = "SECURITIES";
+    private static final String DB_TARGET_NEO4J = "NEO4J";
+    private static final String URI_INVEST_MYSQL = "/internal/invest/db/mysql/query";
+    private static final String URI_CARD_GRAPH = "/internal/card/db/graph/query";
+    private static final String URI_CARD_MYSQL = "/internal/card/db/mysql/query";
+
     private final WebClient cardChannelWasWebClient;
     private final WebClient investChannelWasWebClient;
 
@@ -19,20 +26,20 @@ public class DbQueryClient {
         WebClient client;
         String uri;
 
-        if ("SECURITIES".equals(dataSource)) {
+        if (DATA_SOURCE_SECURITIES.equals(dataSource)) {
             client = investChannelWasWebClient;
-            uri = "/internal/invest/db/mysql/query";
-        } else if ("NEO4J".equals(dbTarget)) {
+            uri = URI_INVEST_MYSQL;
+        } else if (DB_TARGET_NEO4J.equals(dbTarget)) {
             client = cardChannelWasWebClient;
-            uri = "/internal/card/db/graph/query";
+            uri = URI_CARD_GRAPH;
         } else {
             client = cardChannelWasWebClient;
-            uri = "/internal/card/db/mysql/query";
+            uri = URI_CARD_MYSQL;
         }
 
         Map<?, ?> response = client.post()
                 .uri(uri)
-                .header("X-Service-ID", "common-was")
+                .header("X-Service-ID", SERVICE_ID)
                 .header("X-Internal-Api-Key", "local-test-internal-api-key")
                 .header("X-User-UUID", userUuid)
                 .bodyValue(new DbQueryRequest(queryType, params, userUuid))

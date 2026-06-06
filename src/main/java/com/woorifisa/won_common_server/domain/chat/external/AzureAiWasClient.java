@@ -20,7 +20,11 @@ public class AzureAiWasClient {
     public ClassifyResponse classify(String transactionId, String message) {
         ApiResponse<ClassifyResponse> response = azureAiWasWebClient.post()
                 .uri("/api/ai/classify")
-                .header("X-Transaction-ID", transactionId != null ? transactionId : "")
+                .headers(headers -> {
+                    if (transactionId != null && !transactionId.isBlank()) {
+                        headers.add("X-Transaction-ID", transactionId);
+                    }
+                })
                 .bodyValue(Map.of("message", message))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<ApiResponse<ClassifyResponse>>() {})
@@ -31,7 +35,11 @@ public class AzureAiWasClient {
     public ChatResponse generateAnswer(String transactionId, AnswerRequest request) {
         ApiResponse<ChatResponse> response = azureAiWasWebClient.post()
                 .uri("/api/ai/answer")
-                .header("X-Transaction-ID", transactionId != null ? transactionId : "")
+                .headers(headers -> {
+                    if (transactionId != null && !transactionId.isBlank()) {
+                        headers.add("X-Transaction-ID", transactionId);
+                    }
+                })
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<ApiResponse<ChatResponse>>() {})

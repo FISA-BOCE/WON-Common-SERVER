@@ -17,6 +17,7 @@ import java.util.Map;
 public class ChatServiceImpl implements ChatService {
 
     private static final double CONFIDENCE_THRESHOLD = 0.7;
+    private static final String LOW_CONFIDENCE_RESPONSE = "죄송합니다. 질문을 좀 더 구체적으로 입력해 주세요. 예) '이번달 카드 결제 총액이 얼마야?'";
 
     private final AzureAiWasClient azureAiWasClient;
     private final DbQueryClient dbQueryClient;
@@ -26,7 +27,7 @@ public class ChatServiceImpl implements ChatService {
         ClassifyResponse classify = azureAiWasClient.classify(transactionId, request.message());
 
         if (classify.confidence() < CONFIDENCE_THRESHOLD) {
-            return new ChatResponse("죄송합니다. 질문을 좀 더 구체적으로 입력해 주세요. 예) '이번달 카드 결제 총액이 얼마야?'");
+            return new ChatResponse(LOW_CONFIDENCE_RESPONSE);
         }
 
         Map<String, String> params = classify.params() != null ? classify.params() : Collections.emptyMap();

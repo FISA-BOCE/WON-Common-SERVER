@@ -40,7 +40,8 @@ public class InternalApiAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith(INTERNAL_PATH_PREFIX);
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return !path.startsWith(INTERNAL_PATH_PREFIX);
     }
 
     @Override

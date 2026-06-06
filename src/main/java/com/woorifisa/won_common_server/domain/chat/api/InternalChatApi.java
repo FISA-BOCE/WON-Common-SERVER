@@ -8,8 +8,10 @@ import com.woorifisa.won_common_server.global.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/internal/chats")
+@Validated
 @Tag(name = "Internal Chat API", description = "AI 챗봇 오케스트레이션 내부 API")
 public class InternalChatApi {
 
@@ -27,7 +30,7 @@ public class InternalChatApi {
     @Operation(summary = "AI 챗봇 오케스트레이션", description = "사용자 질문을 AI 분류 → DB 조회 → 답변 생성 순서로 처리합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<ChatResponse>> chat(
-            @RequestHeader("X-User-UUID") String userUuid,
+            @RequestHeader("X-User-UUID") @NotBlank String userUuid,
             @RequestHeader(value = "X-Transaction-ID", required = false) String transactionId,
             @Valid @RequestBody ChatRequest request
     ) {

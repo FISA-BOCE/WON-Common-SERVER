@@ -8,9 +8,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @Component
 public class InternalApiAuthFilter extends OncePerRequestFilter {
 
@@ -40,13 +44,15 @@ public class InternalApiAuthFilter extends OncePerRequestFilter {
                 .map(String::trim)
                 .filter(serviceId -> !serviceId.isBlank())
                 .collect(Collectors.toUnmodifiableSet());
-        this.internalApiKey = internalApiKey;
+        this.internalApiKey = normalize(internalApiKey);
         this.objectMapper = objectMapper;
+        validateInternalAuthProperties();
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith(INTERNAL_API_PATH_PREFIX);
+        String uri = request.getRequestURI();
+        return !(uri.equals("/internal") || uri.startsWith(INTERNAL_API_PATH_PREFIX));
     }
 
     @Override
@@ -72,10 +78,40 @@ public class InternalApiAuthFilter extends OncePerRequestFilter {
     }
 
     private boolean isAuthorized(String serviceId, String apiKey) {
-        return serviceId != null
-                && apiKey != null
+        if (allowedServiceIds.isEmpty() || !hasText(internalApiKey)) {
+            log.error("내부 API 인증 설정이 누락되었습니다.");
+            return false;
+        }
+
+        return hasText(serviceId)
+                && hasText(apiKey)
                 && allowedServiceIds.contains(serviceId)
-                && internalApiKey.equals(apiKey);
+                && constantTimeEquals(internalApiKey, apiKey);
+    }
+
+    private void validateInternalAuthProperties() {
+        if (allowedServiceIds.isEmpty() || !hasText(internalApiKey)) {
+            log.error("internal.auth.allowed-service-ids and internal.auth.api-key must not be blank.");
+        }
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private boolean constantTimeEquals(String expected, String actual) {
+        if (!hasText(expected) || actual == null) {
+            return false;
+        }
+
+        byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
+        byte[] actualBytes = actual.getBytes(StandardCharsets.UTF_8);
+
+        return MessageDigest.isEqual(expectedBytes, actualBytes);
     }
 
     private void writeUnauthorizedResponse(HttpServletResponse response) throws IOException {

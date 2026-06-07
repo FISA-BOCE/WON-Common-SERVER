@@ -21,6 +21,7 @@ import com.woorifisa.won_common_server.global.exception.handler.GlobalExceptionH
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,6 +29,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(InternalMappingApi.class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import(GlobalExceptionHandler.class)
 class InternalMappingApiTest {
 
@@ -57,7 +59,7 @@ class InternalMappingApiTest {
         mockMvc.perform(
                         post("/internal/mappings/users")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .header("X-Service-ID", "WON-CARD-CHANNEL")
+                                .header("X-Service-ID", "won-card-channel")
                                 .header("X-Transaction-ID", "TX-20260512-MAP00")
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -119,7 +121,7 @@ class InternalMappingApiTest {
         mockMvc.perform(
                         patch("/internal/mappings/users/{userUuid}/card", userUuid)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .header("X-Service-ID", "WON-CARD-CORE")
+                                .header("X-Service-ID", "won-card-channel")
                                 .header("X-Transaction-ID", "TX-20260512-MAP01")
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -149,7 +151,7 @@ class InternalMappingApiTest {
         mockMvc.perform(
                         patch("/internal/mappings/users/{userUuid}/card", userUuid)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .header("X-Service-ID", "WON-CARD-CORE")
+                                .header("X-Service-ID", "won-card-channel")
                                 .header("X-Transaction-ID", "TX-20260512-MAP01")
                                 .content(requestBody)
                 )
@@ -181,7 +183,7 @@ class InternalMappingApiTest {
         mockMvc.perform(
                         patch("/internal/mappings/users/{userUuid}/invest", userUuid)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .header("X-Service-ID", "WON-CARD-CORE")
+                                .header("X-Service-ID", "won-invest-channel")
                                 .header("X-Transaction-ID", "TX-20260512-MAP01")
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -211,7 +213,7 @@ class InternalMappingApiTest {
         mockMvc.perform(
                         patch("/internal/mappings/users/{userUuid}/invest", userUuid)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .header("X-Service-ID", "WON-CARD-CORE")
+                                .header("X-Service-ID", "won-invest-channel")
                                 .header("X-Transaction-ID", "TX-20260512-MAP01")
                                 .content(requestBody)
                 )

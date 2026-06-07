@@ -32,7 +32,7 @@ public class SecurityConfig {
                                 "/actuator/health"
                         ).permitAll()
                         .requestMatchers("/internal/**").hasRole("INTERNAL")
-                        .anyRequest().permitAll()
+                        .anyRequest().denyAll()
                 )
                 .addFilterBefore(internalApiAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

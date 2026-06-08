@@ -14,13 +14,13 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${external.azure-ai-was.url}")
+    @Value("${internal.services.ai-server.base-url}")
     private String azureAiWasUrl;
 
-    @Value("${external.card-channel-was.url}")
+    @Value("${internal.services.card-channel.base-url}")
     private String cardChannelWasUrl;
 
-    @Value("${external.invest-channel-was.url}")
+    @Value("${internal.services.invest-channel.base-url}")
     private String investChannelWasUrl;
 
     @Bean

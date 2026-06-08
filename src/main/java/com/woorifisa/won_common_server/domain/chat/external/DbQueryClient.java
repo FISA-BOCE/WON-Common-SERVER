@@ -12,7 +12,6 @@ import java.util.Map;
 @Component
 public class DbQueryClient {
 
-    private static final String SERVICE_ID = "common-was";
     private static final String DATA_SOURCE_SECURITIES = "SECURITIES";
     private static final String DATA_SOURCE_CARD = "CARD";
     private static final String DB_TARGET_NEO4J = "NEO4J";
@@ -22,15 +21,18 @@ public class DbQueryClient {
 
     private final WebClient cardChannelWasWebClient;
     private final WebClient investChannelWasWebClient;
+    private final String serviceId;
     private final String internalApiKey;
 
     public DbQueryClient(
             WebClient cardChannelWasWebClient,
             WebClient investChannelWasWebClient,
-            @Value("${internal.channel.api-key}") String internalApiKey
+            @Value("${internal.service-id}") String serviceId,
+            @Value("${internal.auth.api-key}") String internalApiKey
     ) {
         this.cardChannelWasWebClient = cardChannelWasWebClient;
         this.investChannelWasWebClient = investChannelWasWebClient;
+        this.serviceId = serviceId;
         this.internalApiKey = internalApiKey;
     }
 
@@ -56,7 +58,7 @@ public class DbQueryClient {
 
         Map<?, ?> response = client.post()
                 .uri(uri)
-                .header("X-Service-ID", SERVICE_ID)
+                .header("X-Service-ID", serviceId)
                 .header("X-Internal-Api-Key", internalApiKey)
                 .header("X-User-UUID", userUuid)
                 .bodyValue(new DbQueryRequest(queryType, params, userUuid))

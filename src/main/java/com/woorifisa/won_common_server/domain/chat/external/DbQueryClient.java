@@ -6,6 +6,7 @@ import com.woorifisa.won_common_server.global.exception.handler.BusinessExceptio
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
@@ -15,6 +16,7 @@ public class DbQueryClient {
     private static final String DATA_SOURCE_SECURITIES = "SECURITIES";
     private static final String DATA_SOURCE_CARD = "CARD";
     private static final String DB_TARGET_NEO4J = "NEO4J";
+    private static final String DB_TARGET_MYSQL = "MYSQL";
     private static final String URI_INVEST_MYSQL = "/internal/invest/db/mysql/query";
     private static final String URI_CARD_GRAPH = "/internal/card/db/graph/query";
     private static final String URI_CARD_MYSQL = "/internal/card/db/mysql/query";
@@ -47,13 +49,11 @@ public class DbQueryClient {
         } else if (DATA_SOURCE_CARD.equals(dataSource) && DB_TARGET_NEO4J.equals(dbTarget)) {
             client = cardChannelWasWebClient;
             uri = URI_CARD_GRAPH;
-        } else if (DATA_SOURCE_CARD.equals(dataSource)) {
+        } else if (DATA_SOURCE_CARD.equals(dataSource) && DB_TARGET_MYSQL.equals(dbTarget)) {
             client = cardChannelWasWebClient;
             uri = URI_CARD_MYSQL;
         } else {
-            throw new IllegalArgumentException(
-                    "Unsupported query route. dataSource=" + dataSource + ", dbTarget=" + dbTarget
-            );
+            throw new BusinessException(ChatErrorCode.DB_QUERY_ERROR);
         }
 
         Map<?, ?> response = client.post()
@@ -64,15 +64,15 @@ public class DbQueryClient {
                 .bodyValue(new DbQueryRequest(queryType, params, userUuid))
                 .retrieve()
                 .bodyToMono(Map.class)
+                .switchIfEmpty(Mono.error(new BusinessException(ChatErrorCode.DB_QUERY_ERROR)))
                 .block();
 
         if (response == null || !(response.get("data") instanceof Map<?, ?> data)) {
             throw new BusinessException(ChatErrorCode.DB_QUERY_ERROR);
         }
         Object result = data.get("result");
-        if (result != null && !(result instanceof Map<?, ?>)) {
-            throw new BusinessException(ChatErrorCode.DB_QUERY_ERROR);
-        }
-        return (Map<String, Object>) (result != null ? result : data);
+        return result instanceof Map<?, ?> resultMap
+                ? (Map<String, Object>) resultMap
+                : (Map<String, Object>) data;
     }
 }

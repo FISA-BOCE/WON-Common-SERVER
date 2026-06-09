@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(WebClientResponseException.class)
     public ResponseEntity<ErrorResponse> handleWebClientResponseException(WebClientResponseException e) {
         String url = e.getRequest() != null ? e.getRequest().getURI().toString() : "unknown";
-        log.error("webclient error: status={}, url={}", e.getStatusCode(), url);
+        log.error("webclient error: status={}, url={}, message={}", e.getStatusCode(), url, e.getMessage());
         ChatErrorCode errorCode = url.contains("/api/ai/") ? ChatErrorCode.AI_WAS_ERROR : ChatErrorCode.DB_QUERY_ERROR;
         return ResponseEntity
                 .status(errorCode.getHttpStatus())

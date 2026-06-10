@@ -14,7 +14,9 @@ public enum SuccessStatus {
 
     MAPPING_STATUS_FOUND(HttpStatus.OK, "카드/증권 연결 상태 조회가 완료되었습니다."),
     CARD_USER_LINKED(HttpStatus.OK, "카드 연결 상태가 반영되었습니다."),
-    INVEST_USER_LINKED(HttpStatus.OK, "증권 연결 상태가 반영되었습니다.");
+    INVEST_USER_LINKED(HttpStatus.OK, "증권 연결 상태가 반영되었습니다."),
+
+    CHAT_ANSWER_GENERATED(HttpStatus.OK, "AI 챗봇 답변이 생성되었습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

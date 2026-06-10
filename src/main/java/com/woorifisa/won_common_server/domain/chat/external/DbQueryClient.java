@@ -1,0 +1,78 @@
+package com.woorifisa.won_common_server.domain.chat.external;
+
+import com.woorifisa.won_common_server.domain.chat.dto.request.DbQueryRequest;
+import com.woorifisa.won_common_server.domain.chat.exception.code.ChatErrorCode;
+import com.woorifisa.won_common_server.global.exception.handler.BusinessException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.util.Map;
+
+@Component
+public class DbQueryClient {
+
+    private static final String DATA_SOURCE_SECURITIES = "SECURITIES";
+    private static final String DATA_SOURCE_CARD = "CARD";
+    private static final String DB_TARGET_NEO4J = "NEO4J";
+    private static final String DB_TARGET_MYSQL = "MYSQL";
+    private static final String URI_INVEST_MYSQL = "/internal/invest/db/mysql/query";
+    private static final String URI_CARD_GRAPH = "/internal/card/db/graph/query";
+    private static final String URI_CARD_MYSQL = "/internal/card/db/mysql/query";
+
+    private final WebClient cardChannelWasWebClient;
+    private final WebClient investChannelWasWebClient;
+    private final String serviceId;
+    private final String internalApiKey;
+
+    public DbQueryClient(
+            WebClient cardChannelWasWebClient,
+            WebClient investChannelWasWebClient,
+            @Value("${internal.service-id}") String serviceId,
+            @Value("${internal.auth.api-key}") String internalApiKey
+    ) {
+        this.cardChannelWasWebClient = cardChannelWasWebClient;
+        this.investChannelWasWebClient = investChannelWasWebClient;
+        this.serviceId = serviceId;
+        this.internalApiKey = internalApiKey;
+    }
+
+    public Map<String, Object> query(String queryType, String dbTarget, String dataSource,
+                                     Map<String, String> params, String userUuid) {
+        WebClient client;
+        String uri;
+
+        if (DATA_SOURCE_SECURITIES.equals(dataSource)) {
+            client = investChannelWasWebClient;
+            uri = URI_INVEST_MYSQL;
+        } else if (DATA_SOURCE_CARD.equals(dataSource) && DB_TARGET_NEO4J.equals(dbTarget)) {
+            client = cardChannelWasWebClient;
+            uri = URI_CARD_GRAPH;
+        } else if (DATA_SOURCE_CARD.equals(dataSource) && DB_TARGET_MYSQL.equals(dbTarget)) {
+            client = cardChannelWasWebClient;
+            uri = URI_CARD_MYSQL;
+        } else {
+            throw new BusinessException(ChatErrorCode.DB_QUERY_ERROR);
+        }
+
+        Map<?, ?> response = client.post()
+                .uri(uri)
+                .header("X-Service-ID", serviceId)
+                .header("X-Internal-Api-Key", internalApiKey)
+                .header("X-User-UUID", userUuid)
+                .bodyValue(new DbQueryRequest(queryType, params, userUuid))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .switchIfEmpty(Mono.error(new BusinessException(ChatErrorCode.DB_QUERY_ERROR)))
+                .block();
+
+        if (response == null || !(response.get("data") instanceof Map<?, ?> data)) {
+            throw new BusinessException(ChatErrorCode.DB_QUERY_ERROR);
+        }
+        Object result = data.get("result");
+        return result instanceof Map<?, ?> resultMap
+                ? (Map<String, Object>) resultMap
+                : (Map<String, Object>) data;
+    }
+}

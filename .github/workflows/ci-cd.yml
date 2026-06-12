@@ -142,6 +142,7 @@ jobs:
           scp \
             -i deploy/ec2_key.pem \
             -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
             -o ProxyJump="${BASTION_USER}@${BASTION_HOST}" \
             deploy/app.jar deploy/won-common.env deploy/won-common.service \
             "${APP_USER}@${APP_HOST}:/tmp/"
@@ -158,6 +159,7 @@ jobs:
           ssh \
             -i deploy/ec2_key.pem \
             -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
             -o ProxyJump="${BASTION_USER}@${BASTION_HOST}" \
             "${APP_USER}@${APP_HOST}" \
             "sudo mkdir -p ${APP_DIR} && \
@@ -183,6 +185,7 @@ jobs:
           ssh \
             -i deploy/ec2_key.pem \
             -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
             -o ProxyJump="${BASTION_USER}@${BASTION_HOST}" \
             "${APP_USER}@${APP_HOST}" \
             "for i in \$(seq 1 30); do \

@@ -130,6 +130,24 @@ jobs:
           WantedBy=multi-user.target
           EOF
 
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          cat > ~/.ssh/config <<EOF
+          Host *
+            IdentityFile ${GITHUB_WORKSPACE}/deploy/ec2_key.pem
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+            GlobalKnownHostsFile /dev/null
+            LogLevel ERROR
+          EOF
+
+          chmod 600 ~/.ssh/config
+
       - name: Upload jar and environment
         env:
           BASTION_USER: ${{ secrets.BASTION_USER }}
@@ -140,9 +158,7 @@ jobs:
           set -euo pipefail
 
           scp \
-            -i deploy/ec2_key.pem \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
+            -F ~/.ssh/config \
             -o ProxyJump="${BASTION_USER}@${BASTION_HOST}" \
             deploy/app.jar deploy/won-common.env deploy/won-common.service \
             "${APP_USER}@${APP_HOST}:/tmp/"
@@ -157,9 +173,7 @@ jobs:
           set -euo pipefail
 
           ssh \
-            -i deploy/ec2_key.pem \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
+            -F ~/.ssh/config \
             -o ProxyJump="${BASTION_USER}@${BASTION_HOST}" \
             "${APP_USER}@${APP_HOST}" \
             "sudo mkdir -p ${APP_DIR} && \
@@ -183,9 +197,7 @@ jobs:
           set -euo pipefail
 
           ssh \
-            -i deploy/ec2_key.pem \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
+            -F ~/.ssh/config \
             -o ProxyJump="${BASTION_USER}@${BASTION_HOST}" \
             "${APP_USER}@${APP_HOST}" \
             "for i in \$(seq 1 30); do \
